@@ -7,6 +7,4 @@ const routes = express.Router();
 routes.use('/users', usersRoutes);
 routes.use('/cards', cardsRoutes);
 
-module.exports = {
-  routes,
-};
+module.exports = { routes };

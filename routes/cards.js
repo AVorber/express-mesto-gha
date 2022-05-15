@@ -8,7 +8,7 @@ const {
 const cardsRoutes = express.Router();
 
 cardsRoutes.get('/', getCards);
-cardsRoutes.get('/', express.json(), createCard);
+cardsRoutes.post('/', express.json(), createCard);
 cardsRoutes.get('/:cardId', deleteCardById);
 
 module.exports = { cardsRoutes };
