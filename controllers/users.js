@@ -16,4 +16,36 @@ const createUser = async (req, res) => {
   res.status(200).send(await user.save());
 };
 
-module.exports = { getUsers, getUserByID, createUser };
+const updateUser = async (req, res) => {
+  const { name, about } = req.body;
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user._id,
+    { name, about },
+    {
+      new: true,
+      runValidators: true,
+    },
+  );
+  res.status(200).send(updatedUser);
+};
+
+const updateAvatar = async (req, res) => {
+  const { avatar } = req.body;
+  const updatedAvatar = await User.findByIdAndUpdate(
+    req.user._id,
+    { avatar },
+    {
+      new: true,
+      runValidators: true,
+    },
+  );
+  res.status(200).send(updatedAvatar);
+};
+
+module.exports = {
+  getUsers,
+  getUserByID,
+  createUser,
+  updateUser,
+  updateAvatar,
+};

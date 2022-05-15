@@ -13,8 +13,32 @@ const createCard = async (req, res) => {
 };
 
 const deleteCardById = async (req, res) => {
-  const cardById = await Card.findById(req.params.cardId);
-  res.status(200).send(await cardById.deleteOne());
+  const deletedCard = await Card.findByIdAndRemove(req.params.cardId);
+  res.status(200).send(deletedCard);
 };
 
-module.exports = { getCards, createCard, deleteCardById };
+const addLike = async (req, res) => {
+  const updatedCardLike = await Card.findByIdAndUpdate(
+    req.params.cardId,
+    { $addToSet: { likes: req.user._id } },
+    { new: true },
+  );
+  res.status(200).send(updatedCardLike);
+};
+
+const deleteLike = async (req, res) => {
+  const updatedCardDislike = await Card.findByIdAndUpdate(
+    req.params.cardId,
+    { $pull: { likes: req.user._id } },
+    { new: true },
+  );
+  res.status(200).send(updatedCardDislike);
+};
+
+module.exports = {
+  getCards,
+  createCard,
+  deleteCardById,
+  addLike,
+  deleteLike,
+};
