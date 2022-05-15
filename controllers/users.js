@@ -61,6 +61,7 @@ const updateUser = async (req, res) => {
       { name, about },
       {
         new: true,
+        runValidators: true,
       },
     );
     if (!updatedUser) {
@@ -91,6 +92,7 @@ const updateAvatar = async (req, res) => {
       { avatar },
       {
         new: true,
+        runValidators: true,
       },
     );
     if (!updatedUser) {
