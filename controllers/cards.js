@@ -1,11 +1,12 @@
 const Card = require('../models/card');
+const { BAD_REQUEST_ERROR, NOT_FOUND_ERROR, SERVER_ERROR } = require('./errors');
 
 const getCards = async (req, res) => {
   try {
     const cards = await Card.find({});
     res.status(200).send(cards);
   } catch (err) {
-    res.status(500).send({
+    res.status(SERVER_ERROR).send({
       message: 'Ошибка сервера',
     });
   }
@@ -19,12 +20,12 @@ const createCard = async (req, res) => {
     res.status(200).send(await card.save());
   } catch (err) {
     if (err.name === 'ValidationError') {
-      res.status(400).send({
+      res.status(BAD_REQUEST_ERROR).send({
         message: 'Переданы некорректные данные',
       });
       return;
     }
-    res.status(500).send({
+    res.status(SERVER_ERROR).send({
       message: 'Ошибка сервера',
     });
   }
@@ -34,7 +35,7 @@ const deleteCardById = async (req, res) => {
   try {
     const deletedCard = await Card.findByIdAndRemove(req.params.cardId);
     if (!deletedCard) {
-      res.status(404).send({
+      res.status(NOT_FOUND_ERROR).send({
         message: 'Карточка не найдена',
       });
       return;
@@ -42,12 +43,12 @@ const deleteCardById = async (req, res) => {
     res.status(200).send(await deletedCard.deleteOne());
   } catch (err) {
     if (err.name === 'CastError') {
-      res.status(400).send({
+      res.status(BAD_REQUEST_ERROR).send({
         message: 'Передан некорректный id карточки',
       });
       return;
     }
-    res.status(500).send({
+    res.status(SERVER_ERROR).send({
       message: 'Ошибка сервера',
     });
   }
@@ -61,7 +62,7 @@ const addLike = async (req, res) => {
       { new: true },
     );
     if (!updatedCard) {
-      res.status(404).send({
+      res.status(NOT_FOUND_ERROR).send({
         message: 'Карточка не найдена',
       });
       return;
@@ -69,12 +70,12 @@ const addLike = async (req, res) => {
     res.status(200).send(updatedCard);
   } catch (err) {
     if (err.name === 'CastError') {
-      res.status(400).send({
+      res.status(BAD_REQUEST_ERROR).send({
         message: 'Передан некорректный id карточки',
       });
       return;
     }
-    res.status(500).send({
+    res.status(SERVER_ERROR).send({
       message: 'Ошибка сервера',
     });
   }
@@ -88,7 +89,7 @@ const deleteLike = async (req, res) => {
       { new: true },
     );
     if (!updatedCard) {
-      res.status(404).send({
+      res.status(NOT_FOUND_ERROR).send({
         message: 'Карточка не найдена',
       });
       return;
@@ -96,12 +97,12 @@ const deleteLike = async (req, res) => {
     res.status(200).send(updatedCard);
   } catch (err) {
     if (err.name === 'CastError') {
-      res.status(400).send({
+      res.status(BAD_REQUEST_ERROR).send({
         message: 'Передан некорректный id карточки',
       });
       return;
     }
-    res.status(500).send({
+    res.status(SERVER_ERROR).send({
       message: 'Ошибка сервера',
     });
   }
