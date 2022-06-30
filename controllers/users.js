@@ -37,6 +37,30 @@ const getUserByID = async (req, res) => {
   }
 };
 
+const getUserInfo = async (req, res) => {
+  const { _id } = req.body;
+  try {
+    const userById = await User.findById({ _id });
+    if (!userById) {
+      res.status(NOT_FOUND_ERROR).send({
+        message: 'Пользователь не найден',
+      });
+      return;
+    }
+    res.status(200).send(userById);
+  } catch (err) {
+    if (err.name === 'CastError') {
+      res.status(BAD_REQUEST_ERROR).send({
+        message: 'Передан некорректный id пользователя',
+      });
+      return;
+    }
+    res.status(SERVER_ERROR).send({
+      message: 'Ошибка сервера',
+    });
+  }
+};
+
 const createUser = async (req, res) => {
   try {
     const {
@@ -136,6 +160,7 @@ const login = async (req, res) => {
 module.exports = {
   getUsers,
   getUserByID,
+  getUserInfo,
   createUser,
   updateUser,
   updateAvatar,
