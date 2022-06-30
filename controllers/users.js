@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const { BAD_REQUEST_ERROR, NOT_FOUND_ERROR, SERVER_ERROR } = require('./errors');
 
@@ -121,10 +122,22 @@ const updateAvatar = async (req, res) => {
   }
 };
 
+const login = async (req, res) => {
+  const { email, password } = req.body;
+  const user = await User.findUserByCredentials({ email, password });
+  if (!user) {
+    res.status(401).send({ message: res.message });
+    return;
+  }
+  const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+  res.status(200).send({ token });
+};
+
 module.exports = {
   getUsers,
   getUserByID,
   createUser,
   updateUser,
   updateAvatar,
+  login,
 };
