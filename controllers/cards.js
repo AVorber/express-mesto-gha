@@ -40,6 +40,12 @@ const deleteCardById = async (req, res) => {
       });
       return;
     }
+    if (!deletedCard.owner.toString().equals(req.user._id)) {
+      res.status(BAD_REQUEST_ERROR).send({
+        message: 'Нельзя удалять карточки других пользователей',
+      });
+      return;
+    }
     res.status(200).send(await deletedCard.deleteOne());
   } catch (err) {
     if (err.name === 'CastError') {

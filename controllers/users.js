@@ -148,7 +148,7 @@ const updateAvatar = async (req, res) => {
 
 const login = async (req, res) => {
   const { email, password } = req.body;
-  const user = await User.findUserByCredentials({ email, password });
+  const user = await User.findUserByCredentials({ email, password }).select('+password');
   if (!user) {
     res.status(401).send({ message: res.message });
     return;
