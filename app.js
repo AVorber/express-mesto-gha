@@ -1,3 +1,4 @@
+const { celebrate, errors, Joi } = require('celebrate');
 const cookieParser = require('cookie-parser');
 const express = require('express');
 const mongoose = require('mongoose');
@@ -11,9 +12,23 @@ const { PORT = 3000 } = process.env;
 const app = express();
 
 app.use(cookieParser());
+app.use(errors());
 
-app.post('/signin', express.json(), login);
-app.post('/signup', express.json(), createUser);
+app.post('/signin', express.json(), celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(8),
+  }),
+}), login);
+app.post('/signup', express.json(), celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().regex(/^(https?):\/\/[^\s$.?#].[^\s]*$/m),
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(8),
+  }),
+}), createUser);
 
 app.use(auth);
 app.use(routes);
