@@ -1,66 +1,55 @@
 const Card = require('../models/card');
-const { BAD_REQUEST_ERROR, NOT_FOUND_ERROR, SERVER_ERROR } = require('./errors');
+const BadRequestError = require('../errors/bad-request-error');
+const ForbiddenError = require('../errors/forbidden-error');
+const InternalServerError = require('../errors/internal-server-error');
+const NotFoundError = require('../errors/not-found-error');
 
-const getCards = async (req, res) => {
+const getCards = async (req, res, next) => {
   try {
     const cards = await Card.find({});
     res.status(200).send(cards);
   } catch (err) {
-    res.status(SERVER_ERROR).send({
-      message: 'Ошибка сервера',
-    });
+    next(new InternalServerError('На сервере произошла ошибка'));
   }
 };
 
-const createCard = async (req, res) => {
+const createCard = async (req, res, next) => {
   try {
     const owner = req.user._id;
     const { name, link } = req.body;
     const card = new Card({ name, link, owner });
     res.status(200).send(await card.save());
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      res.status(BAD_REQUEST_ERROR).send({
-        message: 'Переданы некорректные данные',
-      });
+    if (err.name === 'BadRequestError') {
+      next(new BadRequestError('Некорректный id пользователя'));
       return;
     }
-    res.status(SERVER_ERROR).send({
-      message: 'Ошибка сервера',
-    });
+    next(new InternalServerError('На сервере произошла ошибка'));
   }
 };
 
-const deleteCardById = async (req, res) => {
+const deleteCardById = async (req, res, next) => {
   try {
     const deletedCard = await Card.findByIdAndRemove(req.params.cardId);
     if (!deletedCard) {
-      res.status(NOT_FOUND_ERROR).send({
-        message: 'Карточка не найдена',
-      });
+      next(new NotFoundError('Карточка не найдена'));
       return;
     }
     if (!deletedCard.owner.toString().equals(req.user._id)) {
-      res.status(BAD_REQUEST_ERROR).send({
-        message: 'Нельзя удалять карточки других пользователей',
-      });
+      next(new ForbiddenError('Нельзя удалять карточки других пользователей'));
       return;
     }
     res.status(200).send(await deletedCard.deleteOne());
   } catch (err) {
-    if (err.name === 'CastError') {
-      res.status(BAD_REQUEST_ERROR).send({
-        message: 'Передан некорректный id карточки',
-      });
+    if (err.name === 'BadRequestError') {
+      next(new BadRequestError('Некорректный id карточки'));
       return;
     }
-    res.status(SERVER_ERROR).send({
-      message: 'Ошибка сервера',
-    });
+    next(new InternalServerError('На сервере произошла ошибка'));
   }
 };
 
-const addLike = async (req, res) => {
+const addLike = async (req, res, next) => {
   try {
     const updatedCard = await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -68,26 +57,20 @@ const addLike = async (req, res) => {
       { new: true },
     );
     if (!updatedCard) {
-      res.status(NOT_FOUND_ERROR).send({
-        message: 'Карточка не найдена',
-      });
+      next(new NotFoundError('Карточка не найдена'));
       return;
     }
     res.status(200).send(updatedCard);
   } catch (err) {
-    if (err.name === 'CastError') {
-      res.status(BAD_REQUEST_ERROR).send({
-        message: 'Передан некорректный id карточки',
-      });
+    if (err.name === 'BadRequestError') {
+      next(new BadRequestError('Некорректный id карточки'));
       return;
     }
-    res.status(SERVER_ERROR).send({
-      message: 'Ошибка сервера',
-    });
+    next(new InternalServerError('На сервере произошла ошибка'));
   }
 };
 
-const deleteLike = async (req, res) => {
+const deleteLike = async (req, res, next) => {
   try {
     const updatedCard = await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -95,22 +78,16 @@ const deleteLike = async (req, res) => {
       { new: true },
     );
     if (!updatedCard) {
-      res.status(NOT_FOUND_ERROR).send({
-        message: 'Карточка не найдена',
-      });
+      next(new NotFoundError('Карточка не найдена'));
       return;
     }
     res.status(200).send(updatedCard);
   } catch (err) {
-    if (err.name === 'CastError') {
-      res.status(BAD_REQUEST_ERROR).send({
-        message: 'Передан некорректный id карточки',
-      });
+    if (err.name === 'BadRequestError') {
+      next(new BadRequestError('Некорректный id карточки'));
       return;
     }
-    res.status(SERVER_ERROR).send({
-      message: 'Ошибка сервера',
-    });
+    next(new InternalServerError('На сервере произошла ошибка'));
   }
 };
 

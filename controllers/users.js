@@ -1,67 +1,56 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { BAD_REQUEST_ERROR, NOT_FOUND_ERROR, SERVER_ERROR } = require('./errors');
+const BadRequestError = require('../errors/bad-request-error');
+const ConflictError = require('../errors/conflict-error');
+const InternalServerError = require('../errors/internal-server-error');
+const NotFoundError = require('../errors/not-found-error');
 
-const getUsers = async (req, res) => {
+const getUsers = async (req, res, next) => {
   try {
     const users = await User.find({});
     res.status(200).send(users);
   } catch (err) {
-    res.status(SERVER_ERROR).send({
-      message: 'Ошибка сервера',
-    });
+    next(new InternalServerError('На сервере произошла ошибка'));
   }
 };
 
-const getUserByID = async (req, res) => {
+const getUserByID = async (req, res, next) => {
   try {
     const userById = await User.findById(req.params.userId);
     if (!userById) {
-      res.status(NOT_FOUND_ERROR).send({
-        message: 'Пользователь не найден',
-      });
+      next(new NotFoundError('Пользователь не найден'));
       return;
     }
     res.status(200).send(userById);
   } catch (err) {
-    if (err.name === 'CastError') {
-      res.status(BAD_REQUEST_ERROR).send({
-        message: 'Передан некорректный id пользователя',
-      });
+    if (err.name === 'BadRequestError') {
+      next(new BadRequestError('Некорректный id пользователя'));
       return;
     }
-    res.status(SERVER_ERROR).send({
-      message: 'Ошибка сервера',
-    });
+    next(new InternalServerError('На сервере произошла ошибка'));
   }
 };
 
-const getUserInfo = async (req, res) => {
+const getUserInfo = async (req, res, next) => {
   const { _id } = req.body;
   try {
     const userById = await User.findById({ _id });
     if (!userById) {
-      res.status(NOT_FOUND_ERROR).send({
-        message: 'Пользователь не найден',
-      });
+      next(new NotFoundError('Пользователь не найден'));
       return;
     }
     res.status(200).send(userById);
   } catch (err) {
-    if (err.name === 'CastError') {
-      res.status(BAD_REQUEST_ERROR).send({
-        message: 'Передан некорректный id пользователя',
-      });
+    if (err.name === 'BadRequestError') {
+      next(new BadRequestError('Некорректный id пользователя'));
       return;
     }
-    res.status(SERVER_ERROR).send({
-      message: 'Ошибка сервера',
-    });
+    next(new InternalServerError('На сервере произошла ошибка'));
   }
 };
 
-const createUser = async (req, res) => {
+const createUser = async (req, res, next) => {
   try {
     const {
       name, about, avatar, email, password,
@@ -72,19 +61,19 @@ const createUser = async (req, res) => {
     });
     res.status(200).send(await user.save());
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      res.status(BAD_REQUEST_ERROR).send({
-        message: 'Переданы некорректные данные',
-      });
+    if (err.name === 'BadRequestError') {
+      next(new BadRequestError('Переданы некорректные данные'));
       return;
     }
-    res.status(SERVER_ERROR).send({
-      message: 'Ошибка сервера',
-    });
+    if (err.name === 'ConflictError') {
+      next(new ConflictError('Такой пользователь уже существует'));
+      return;
+    }
+    next(new InternalServerError('На сервере произошла ошибка'));
   }
 };
 
-const updateUser = async (req, res) => {
+const updateUser = async (req, res, next) => {
   try {
     const { name, about } = req.body;
     const updatedUser = await User.findByIdAndUpdate(
@@ -96,26 +85,24 @@ const updateUser = async (req, res) => {
       },
     );
     if (!updatedUser) {
-      res.status(NOT_FOUND_ERROR).send({
-        message: 'Пользователь не найден',
-      });
+      next(new NotFoundError('Пользователь не найден'));
       return;
     }
     res.status(200).send(updatedUser);
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      res.status(BAD_REQUEST_ERROR).send({
-        message: 'Переданы некорректные данные',
-      });
+    if (err.name === 'BadRequestError') {
+      next(new BadRequestError('Переданы некорректные данные'));
       return;
     }
-    res.status(SERVER_ERROR).send({
-      message: 'Ошибка сервера',
-    });
+    if (err.name === 'ConflictError') {
+      next(new ConflictError('Такой пользователь уже существует'));
+      return;
+    }
+    next(new InternalServerError('На сервере произошла ошибка'));
   }
 };
 
-const updateAvatar = async (req, res) => {
+const updateAvatar = async (req, res, next) => {
   try {
     const { avatar } = req.body;
     const updatedUser = await User.findByIdAndUpdate(
@@ -127,34 +114,32 @@ const updateAvatar = async (req, res) => {
       },
     );
     if (!updatedUser) {
-      res.status(NOT_FOUND_ERROR).send({
-        message: 'Пользователь не найден',
-      });
+      next(new NotFoundError('Пользователь не найден'));
       return;
     }
     res.status(200).send(updatedUser);
   } catch (err) {
-    if (err.errors.avatar.name === 'ValidationError') {
-      res.status(BAD_REQUEST_ERROR).send({
-        message: 'Переданы некорректные данные',
-      });
+    if (err.name === 'BadRequestError') {
+      next(new BadRequestError('Переданы некорректные данные'));
       return;
     }
-    res.status(SERVER_ERROR).send({
-      message: 'Ошибка сервера',
-    });
+    next(new InternalServerError('На сервере произошла ошибка'));
   }
 };
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
   const { email, password } = req.body;
-  const user = await User.findUserByCredentials({ email, password }).select('+password');
-  if (!user) {
-    res.status(401).send({ message: res.message });
-    return;
-  }
-  const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
-  res.status(200).send({ token });
+  return User.findUserByCredentials({ email, password })
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+      res.cookie('jwt', token, {
+        maxAge: 3600000,
+        httpOnly: true,
+        sameSite: true,
+      });
+      res.send({ token });
+    })
+    .catch(next);
 };
 
 module.exports = {
