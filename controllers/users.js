@@ -5,6 +5,7 @@ const BadRequestError = require('../errors/bad-request-error');
 const ConflictError = require('../errors/conflict-error');
 const InternalServerError = require('../errors/internal-server-error');
 const NotFoundError = require('../errors/not-found-error');
+const UnauthorizedError = require('../errors/unauthorized-error');
 
 const getUsers = async (req, res, next) => {
   try {
@@ -147,7 +148,9 @@ const login = async (req, res, next) => {
       });
       res.send({ message: 'Успешная авторизация' });
     })
-    .catch(next);
+    .catch(() => {
+      next(new UnauthorizedError('Необходима авторизация'));
+    });
 };
 
 module.exports = {

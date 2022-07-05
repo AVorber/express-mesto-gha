@@ -30,16 +30,16 @@ const createCard = async (req, res, next) => {
 
 const deleteCardById = async (req, res, next) => {
   try {
-    const deletedCard = await Card.findByIdAndRemove(req.params.cardId);
-    if (!deletedCard) {
+    const cardById = await Card.findById(req.params.cardId);
+    if (!cardById) {
       next(new NotFoundError('Карточка не найдена'));
       return;
     }
-    if (!deletedCard.owner.toString().equals(req.user._id)) {
+    if (cardById.owner.toString() !== req.user._id) {
       next(new ForbiddenError('Нельзя удалять карточки других пользователей'));
       return;
     }
-    res.status(200).send(await deletedCard.deleteOne());
+    res.status(200).send(await cardById.deleteOne());
   } catch (err) {
     if (err.name === 'BadRequestError') {
       next(new BadRequestError('Некорректный id карточки'));
