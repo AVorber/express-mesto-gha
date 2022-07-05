@@ -33,14 +33,13 @@ const getUserByID = async (req, res, next) => {
 };
 
 const getUserInfo = async (req, res, next) => {
-  const { _id } = req.body;
   try {
-    const userById = await User.findById({ _id });
-    if (!userById) {
+    const user = await User.findById(req.user._id);
+    if (!user) {
       next(new NotFoundError('Пользователь не найден'));
       return;
     }
-    res.status(200).send(userById);
+    res.status(200).send(user);
   } catch (err) {
     if (err.name === 'BadRequestError') {
       next(new BadRequestError('Некорректный id пользователя'));
@@ -59,13 +58,22 @@ const createUser = async (req, res, next) => {
     const user = new User({
       name, about, avatar, email, password: hash,
     });
-    res.status(200).send(await user.save());
+    const createdUser = await user.save();
+    res.status(200).send({
+      message: {
+        userId: createdUser._id,
+        name: createdUser.name,
+        about: createdUser.about,
+        avatar: createdUser.avatar,
+        email: createdUser.email,
+      },
+    });
   } catch (err) {
     if (err.name === 'BadRequestError') {
       next(new BadRequestError('Переданы некорректные данные'));
       return;
     }
-    if (err.name === 'ConflictError') {
+    if (err.name === 'MongoServerError') {
       next(new ConflictError('Такой пользователь уже существует'));
       return;
     }
@@ -129,7 +137,7 @@ const updateAvatar = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   const { email, password } = req.body;
-  return User.findUserByCredentials({ email, password })
+  return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
       res.cookie('jwt', token, {
@@ -137,7 +145,7 @@ const login = async (req, res, next) => {
         httpOnly: true,
         sameSite: true,
       });
-      res.send({ token });
+      res.send({ message: 'Успешная авторизация' });
     })
     .catch(next);
 };
