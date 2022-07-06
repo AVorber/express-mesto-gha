@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 const express = require('express');
 const mongoose = require('mongoose');
 const { routes } = require('./routes/app');
+const { isURL } = require('./helpers/regex');
 
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
@@ -26,7 +27,7 @@ app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().regex(/^(https?):\/\/[^\s$.?#].[^\s]*$/m),
+    avatar: Joi.string().regex(isURL),
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8),
   }),

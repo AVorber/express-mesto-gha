@@ -25,7 +25,7 @@ const getUserByID = async (req, res, next) => {
     }
     res.status(200).send(userById);
   } catch (err) {
-    if (err.name === 'BadRequestError') {
+    if (err.name === 'ValidationError') {
       next(new BadRequestError('Некорректный id пользователя'));
       return;
     }
@@ -42,7 +42,7 @@ const getUserInfo = async (req, res, next) => {
     }
     res.status(200).send(user);
   } catch (err) {
-    if (err.name === 'BadRequestError') {
+    if (err.name === 'ValidationError') {
       next(new BadRequestError('Некорректный id пользователя'));
       return;
     }
@@ -60,17 +60,15 @@ const createUser = async (req, res, next) => {
       name, about, avatar, email, password: hash,
     });
     const createdUser = await user.save();
-    res.status(200).send({
-      message: {
-        userId: createdUser._id,
-        name: createdUser.name,
-        about: createdUser.about,
-        avatar: createdUser.avatar,
-        email: createdUser.email,
-      },
+    res.status(201).send({
+      userId: createdUser._id,
+      name: createdUser.name,
+      about: createdUser.about,
+      avatar: createdUser.avatar,
+      email: createdUser.email,
     });
   } catch (err) {
-    if (err.name === 'BadRequestError') {
+    if (err.name === 'ValidationError') {
       next(new BadRequestError('Переданы некорректные данные'));
       return;
     }
@@ -99,7 +97,7 @@ const updateUser = async (req, res, next) => {
     }
     res.status(200).send(updatedUser);
   } catch (err) {
-    if (err.name === 'BadRequestError') {
+    if (err.name === 'ValidationError') {
       next(new BadRequestError('Переданы некорректные данные'));
       return;
     }
@@ -128,7 +126,7 @@ const updateAvatar = async (req, res, next) => {
     }
     res.status(200).send(updatedUser);
   } catch (err) {
-    if (err.name === 'BadRequestError') {
+    if (err.name === 'ValidationError') {
       next(new BadRequestError('Переданы некорректные данные'));
       return;
     }
@@ -148,9 +146,7 @@ const login = async (req, res, next) => {
       });
       res.send({ message: 'Успешная авторизация' });
     })
-    .catch(() => {
-      next(new UnauthorizedError('Необходима авторизация'));
-    });
+    .catch(next);
 };
 
 module.exports = {

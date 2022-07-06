@@ -18,10 +18,10 @@ const createCard = async (req, res, next) => {
     const owner = req.user._id;
     const { name, link } = req.body;
     const card = new Card({ name, link, owner });
-    res.status(200).send(await card.save());
+    res.status(201).send(await card.save());
   } catch (err) {
-    if (err.name === 'BadRequestError') {
-      next(new BadRequestError('Некорректный id пользователя'));
+    if (err.name === 'ValidationError') {
+      next(new BadRequestError('Переданы некорректные данныеds'));
       return;
     }
     next(new InternalServerError('На сервере произошла ошибка'));
@@ -41,7 +41,7 @@ const deleteCardById = async (req, res, next) => {
     }
     res.status(200).send(await cardById.deleteOne());
   } catch (err) {
-    if (err.name === 'BadRequestError') {
+    if (err.name === 'ValidationError') {
       next(new BadRequestError('Некорректный id карточки'));
       return;
     }
@@ -62,7 +62,7 @@ const addLike = async (req, res, next) => {
     }
     res.status(200).send(updatedCard);
   } catch (err) {
-    if (err.name === 'BadRequestError') {
+    if (err.name === 'ValidationError') {
       next(new BadRequestError('Некорректный id карточки'));
       return;
     }
@@ -83,7 +83,7 @@ const deleteLike = async (req, res, next) => {
     }
     res.status(200).send(updatedCard);
   } catch (err) {
-    if (err.name === 'BadRequestError') {
+    if (err.name === 'ValidationError') {
       next(new BadRequestError('Некорректный id карточки'));
       return;
     }
