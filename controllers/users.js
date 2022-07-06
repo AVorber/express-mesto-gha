@@ -3,16 +3,14 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const BadRequestError = require('../errors/bad-request-error');
 const ConflictError = require('../errors/conflict-error');
-const InternalServerError = require('../errors/internal-server-error');
 const NotFoundError = require('../errors/not-found-error');
-const UnauthorizedError = require('../errors/unauthorized-error');
 
 const getUsers = async (req, res, next) => {
   try {
     const users = await User.find({});
     res.status(200).send(users);
   } catch (err) {
-    next(new InternalServerError('На сервере произошла ошибка'));
+    next(err);
   }
 };
 
@@ -29,7 +27,7 @@ const getUserByID = async (req, res, next) => {
       next(new BadRequestError('Некорректный id пользователя'));
       return;
     }
-    next(new InternalServerError('На сервере произошла ошибка'));
+    next(err);
   }
 };
 
@@ -46,7 +44,7 @@ const getUserInfo = async (req, res, next) => {
       next(new BadRequestError('Некорректный id пользователя'));
       return;
     }
-    next(new InternalServerError('На сервере произошла ошибка'));
+    next(err);
   }
 };
 
@@ -76,7 +74,7 @@ const createUser = async (req, res, next) => {
       next(new ConflictError('Такой пользователь уже существует'));
       return;
     }
-    next(new InternalServerError('На сервере произошла ошибка'));
+    next(err);
   }
 };
 
@@ -101,11 +99,7 @@ const updateUser = async (req, res, next) => {
       next(new BadRequestError('Переданы некорректные данные'));
       return;
     }
-    if (err.name === 'ConflictError') {
-      next(new ConflictError('Такой пользователь уже существует'));
-      return;
-    }
-    next(new InternalServerError('На сервере произошла ошибка'));
+    next(err);
   }
 };
 
@@ -130,7 +124,7 @@ const updateAvatar = async (req, res, next) => {
       next(new BadRequestError('Переданы некорректные данные'));
       return;
     }
-    next(new InternalServerError('На сервере произошла ошибка'));
+    next(err);
   }
 };
 

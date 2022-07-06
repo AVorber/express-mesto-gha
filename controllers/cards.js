@@ -1,7 +1,6 @@
 const Card = require('../models/card');
 const BadRequestError = require('../errors/bad-request-error');
 const ForbiddenError = require('../errors/forbidden-error');
-const InternalServerError = require('../errors/internal-server-error');
 const NotFoundError = require('../errors/not-found-error');
 
 const getCards = async (req, res, next) => {
@@ -9,7 +8,7 @@ const getCards = async (req, res, next) => {
     const cards = await Card.find({});
     res.status(200).send(cards);
   } catch (err) {
-    next(new InternalServerError('На сервере произошла ошибка'));
+    next(err);
   }
 };
 
@@ -21,10 +20,10 @@ const createCard = async (req, res, next) => {
     res.status(201).send(await card.save());
   } catch (err) {
     if (err.name === 'ValidationError') {
-      next(new BadRequestError('Переданы некорректные данныеds'));
+      next(new BadRequestError('Переданы некорректные данные'));
       return;
     }
-    next(new InternalServerError('На сервере произошла ошибка'));
+    next(err);
   }
 };
 
@@ -45,7 +44,7 @@ const deleteCardById = async (req, res, next) => {
       next(new BadRequestError('Некорректный id карточки'));
       return;
     }
-    next(new InternalServerError('На сервере произошла ошибка'));
+    next(err);
   }
 };
 
@@ -66,7 +65,7 @@ const addLike = async (req, res, next) => {
       next(new BadRequestError('Некорректный id карточки'));
       return;
     }
-    next(new InternalServerError('На сервере произошла ошибка'));
+    next(err);
   }
 };
 
@@ -87,7 +86,7 @@ const deleteLike = async (req, res, next) => {
       next(new BadRequestError('Некорректный id карточки'));
       return;
     }
-    next(new InternalServerError('На сервере произошла ошибка'));
+    next(err);
   }
 };
 
