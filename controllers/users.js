@@ -57,14 +57,7 @@ const createUser = async (req, res, next) => {
     const user = new User({
       name, about, avatar, email, password: hash,
     });
-    const createdUser = await user.save();
-    res.status(201).send({
-      userId: createdUser._id,
-      name: createdUser.name,
-      about: createdUser.about,
-      avatar: createdUser.avatar,
-      email: createdUser.email,
-    });
+    res.status(201).send(await user.save());
   } catch (err) {
     if (err.name === 'ValidationError') {
       next(new BadRequestError('Переданы некорректные данные'));
