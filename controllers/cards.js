@@ -40,7 +40,7 @@ const deleteCardById = async (req, res, next) => {
     }
     res.status(200).send(await cardById.deleteOne());
   } catch (err) {
-    if (err.name === 'ValidationError') {
+    if (err.name === 'CastError') {
       next(new BadRequestError('Некорректный id карточки'));
       return;
     }
@@ -61,7 +61,7 @@ const addLike = async (req, res, next) => {
     }
     res.status(200).send(updatedCard);
   } catch (err) {
-    if (err.name === 'ValidationError') {
+    if (err.name === 'CastError') {
       next(new BadRequestError('Некорректный id карточки'));
       return;
     }
@@ -82,7 +82,7 @@ const deleteLike = async (req, res, next) => {
     }
     res.status(200).send(updatedCard);
   } catch (err) {
-    if (err.name === 'ValidationError') {
+    if (err.name === 'CastError') {
       next(new BadRequestError('Некорректный id карточки'));
       return;
     }

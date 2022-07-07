@@ -23,7 +23,7 @@ const getUserByID = async (req, res, next) => {
     }
     res.status(200).send(userById);
   } catch (err) {
-    if (err.name === 'ValidationError') {
+    if (err.name === 'CastError') {
       next(new BadRequestError('Некорректный id пользователя'));
       return;
     }
@@ -40,7 +40,7 @@ const getUserInfo = async (req, res, next) => {
     }
     res.status(200).send(user);
   } catch (err) {
-    if (err.name === 'ValidationError') {
+    if (err.name === 'CastError') {
       next(new BadRequestError('Некорректный id пользователя'));
       return;
     }
